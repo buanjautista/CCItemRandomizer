@@ -5,6 +5,7 @@ import { Markers, extractMarkers } from './extract-markers.js';
 import { GenerateOptions, deserialize, generateRandomizerState } from './generate.js';
 import { Element } from './item-data.model.js';
 import { addTitleMenuButton } from './randomizer-menu.js';
+import { getHintListEntry, loreMapReplacements, setLoreOverrides, generateHintList } from './hint-system.js';
 
 
 declare const ig: any;
@@ -75,6 +76,9 @@ export default class ItemRandomizer {
 		}, currentVersion, options => this.generate(options));
 
 		let mapObjectSpawnQueue: any[] = [];
+		
+		// Creates hint list and reads the prop-list json to be replaced with hints
+		setLoreOverrides(baseDirectory)
 
 		ig.ENTITY.Chest.inject({
 			_reallyOpenUp() {
@@ -233,6 +237,7 @@ export default class ItemRandomizer {
 			loadLevel(map: any, ...args: unknown[]) {
 				const mapChecks = maps[map.name.replace(/[\\\/]/g, '.')] || {};
 				const mapOverrides = (overrides && overrides[map.name.replace(/[\\\/]/g, '.')]) || {};
+				const loreOverrides = loreMapReplacements[map.name.replace(/[\\\/]/g, '.')] || {};
 
 				if (enemyRandomizerPreset?.enable && enemyData) {
 					mapObjectSpawnQueue = [];
@@ -357,6 +362,20 @@ export default class ItemRandomizer {
 						}
 					}
 				}
+
+                if (loreOverrides) { 
+                    for (const entity of map.entities) {
+                        if (entity && entity.settings && entity.settings.mapId && loreOverrides[entity.settings.mapId]) {
+                            for (let check of loreOverrides[entity.settings.mapId]) {
+                                let currentHint = getHintListEntry(check.index)
+                                let path = check.path.slice(1).split(/\./g);
+                                set(entity, currentHint.event, [...path, 'event'])
+                                set(entity, currentHint.hover, [...path, 'hoverText'])
+                            }
+                        }
+                    }
+                }
+
 
 				return this.parent(map, ...args);
 			},
@@ -713,6 +732,9 @@ export default class ItemRandomizer {
 			seedTitle: 'Randomizer'
 		}
 		ig.lang.labels.sc.gui.menu['menu-titles'].randomizer = 'Randomizer';
+		
+		// generate a hint list on memory, there might be better ways to do it
+		generateHintList()
 	}
 }
 

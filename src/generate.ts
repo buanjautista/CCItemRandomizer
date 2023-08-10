@@ -4,6 +4,7 @@ import { EnemyGeneratorPreset } from "./enemy-randomizer.js";
 import { Markers } from "./extract-markers.js";
 import { ItemData } from "./item-data.model.js";
 import { initRandom, readJsonFromFile } from './utils.js';
+import { saveSpoilerSeed, generateHintList } from "./hint-system.js";
 
 // @ts-ignore
 const fs: typeof import('fs') = require('fs');
@@ -114,6 +115,9 @@ export async function generateRandomizerState(
     );
 
     const enemyData: EnemyData | undefined = data.enemyData;
+    saveSpoilerSeed(spoilerLog, seed) // Saves a copy of spoiler log and seed for hint-system
+    generateHintList()
+
     return { spoilerLog, maps, quests, shops, overrides, markers: data.markers, enemyRandomizerPreset, enemyData, seed: serialize(options), currentVersion: data.version };
 }
 
