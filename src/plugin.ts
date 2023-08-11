@@ -45,9 +45,12 @@ export default class ItemRandomizer {
 		seed = state.seed;
 		currentVersion = state.currentVersion;
 		console.log('seed', seed);
+		saveSpoilerSeed(spoilerLog, seed) // Saves a copy of spoiler log and seed for hint-system
 	}
 
 	async prestart() {
+		// @ts-ignore 
+		window.generateHintList = () => generateHintList()
 		// @ts-ignore
 		window.generateRandomizerState = (options: GenerateOptions) => this.generate({
 			...options,
@@ -369,8 +372,8 @@ export default class ItemRandomizer {
 								let currentMap = map.name.replace(/[\\\/]/g, '.')
                                 let currentHint = getHintListEntry(entity.settings.mapId, currentMap);
                                 let path = loreOverrides[entity.settings.mapId].path.slice(1).split(/\./g);
-                                set(entity, currentHint.event, [...path, 'event']);
-                                set(entity, currentHint.hover, [...path, 'hoverText']);
+                                set(entity, currentHint, [...path, 'interact']);
+								set(entity, "", [...path, 'condAnims']);
                         }
                     }
                 }

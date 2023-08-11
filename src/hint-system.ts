@@ -4,8 +4,16 @@ import { Check } from './checks.js';
 // type LoreOverrides = Record<string, Record<string, [{ path: string; index: number }]>>
 export let loreMapReplacements: any
 
+// @ts-ignore
+const fs: typeof import('fs') = require('fs');
+// @ts-ignore
+declare const ig: any;
+// @ts-ignore
+declare const sc: any;
+
 let spoilerLog: any // This might get replaced with anything on the main script
 let currentSeed: any = 0 // this will probably get replaced with "seed2" on implementation
+let shorterSeed: number
 let seedIndex: any = 0
 
 export function saveSpoilerSeed(spoiler: any, seed: any) {
@@ -13,11 +21,46 @@ export function saveSpoilerSeed(spoiler: any, seed: any) {
     currentSeed = seed
 }
 
+async function fetchHintList(): Promise<any> {
+    let list
+    let listExists = fs.existsSync('randomizerHints.json');
+    if (listExists) {
+        list = await readJsonFromFile('randomizerHints.json')
+        if (currentSeed == list.seed) {
+            console.log('grabbed hint list')
+            let savedHintList = list.hints
+            return savedHintList
+        }
+        else {
+            console.log('seed mismatch')
+            return false
+        }
+    }
+    else {
+        console.log('no hint list found ')
+        return false
+    }
+    
+}
+
 export async function generateHintList() {
+    let savedHintList = await fetchHintList()
     hintList = []
-    let hintCount = await getHintListLength()
-    for (let i = 0; i < hintCount; i++) {
-        generateHint()
+    if (savedHintList == false) {
+        console.log('no hint list found, generating new one')
+        let hintCount = await getHintListLength()
+        for (let i = 0; i < hintCount; i++) {
+            let hintInfo = await generateHint()
+            hintList.push({hint: hintInfo[0], type: hintInfo[1]}) // Get the hints on a list to be injected into the game later
+        }
+        fs.promises.writeFile(
+            'randomizerHints.json',
+            JSON.stringify({ "seed": currentSeed, "hints": hintList }),
+        );
+    }
+    else { 
+        console.log('hint list found, replacing current one')
+        hintList = savedHintList
     }
     // console.log("Hints generated: ", hintCount, hintList) 
 }
@@ -29,7 +72,8 @@ async function grabSpoilerLog() {
     const spoiler = await response.json();
  
     spoilerLog = spoiler.spoilerLog
-    currentSeed = spoiler.seed.slice(2).split('_')[0]   
+    currentSeed = spoiler.seed
+    shorterSeed = currentSeed.slice(2).split('_')[0]   
 
     spoilerLog = spoilerLog
 
@@ -72,8 +116,6 @@ export async function generateHint() { // outputs a random hint phrase from spoi
 
     // Generates hint
     let hintInfo = await getHintOutput(item, currentItemMap, currentItemLock, usefulItemList)
-
-    hintList.push({hint: hintInfo[0], type: hintInfo[1]}) // Get the hints on a list to be injected into the game later
 
     return hintInfo
 }
@@ -142,10 +184,10 @@ async function getHintOutput(item: any, currentItemMap: string, currentItemLock:
     let randomKeySentence = [getRandomPhrase(connectorStrings.keylocations[0]), getRandomPhrase(connectorStrings.keylocations[1])]
     
     // Random chances to get a key lock, an area info, or a useless sentence
-    let doLockSentence = fixedRandomNumber(getCurrentSeedWithOffset()) < 0.3
+    let doLockSentence = fixedRandomNumber(getCurrentSeedWithOffset()) < 0.4
     let doUselessSentence = fixedRandomNumber(getCurrentSeedWithOffset()) < 0.05
-    let doAreaSentence = fixedRandomNumber(getCurrentSeedWithOffset()) < 0.6
-    let doMapSentence = fixedRandomNumber(getCurrentSeedWithOffset()) < 0.4
+    let doAreaSentence = fixedRandomNumber(getCurrentSeedWithOffset()) < 0.74
+    let doMapSentence = fixedRandomNumber(getCurrentSeedWithOffset()) < 0.5
 
     // Generates the entire hint phrase depending on the item, and sentences chances
     let currentItemID = item.replacedWith.item
@@ -241,62 +283,65 @@ function getCurrentSeedWithOffset() {
 // Returns hint info from a specific entry on the list, to inject in the game
 export function getHintListEntry(check: any, map: any) {
     let index: number = getHintIndex(check, map)
-    if (hintList && hintList[index])
-    {
+    if (hintList && hintList[index]) {
         return {
-            event: [{
-                "text": {
-                    "en_US": hintList[index].hint,
-                    "de_DE": hintList[index].hint,
-                    "fr_FR": hintList[index].hint,
-                    "zh_CN": hintList[index].hint,
-                    "ja_JP": hintList[index].hint,
-                    "ko_KR": hintList[index].hint,
-                    "langUid": 64,
-                    "zh_TW": hintList[index].hint
+            "icon": "INFO",
+            "hoverText": {
+              "en_US": hintList[index].type,
+              "de_DE": hintList[index].type,
+              "zh_CN": hintList[index].type,
+              "ja_JP": hintList[index].type,
+              "ko_KR": hintList[index].type,
+              "langUid": 886,
+              "zh_TW": hintList[index].type
+            },
+            "event": [
+              {
+                  "text": {
+                  "en_US": hintList[index].hint,
+                  "de_DE": hintList[index].hint,
+                  "zh_CN": hintList[index].hint,
+                  "ja_JP": hintList[index].hint,
+                  "ko_KR": hintList[index].hint,
+                  "langUid": 887,
+                  "zh_TW": hintList[index].hint
                 },
                 "center": false,
+                "autoContinue": false,
                 "type": "SHOW_BOARD_MSG"
-            }],
-            hover: {
-                    "en_US": hintList[index].type,
-                    "de_DE": hintList[index].type,
-                    "fr_FR": hintList[index].type,
-                    "langUid": 63,
-                    "zh_CN": hintList[index].type,
-                    "ja_JP": hintList[index].type,
-                    "ko_KR": hintList[index].type,
-                    "zh_TW": hintList[index].type
-            }
-        }
+              }
+            ]
+          }   
     }
     else {
-        return { 
-            event: [{
-                "text": {
-                    "en_US": "Missing Hint",
-                    "de_DE": "Missing Hint",
-                    "fr_FR": "Missing Hint",
-                    "zh_CN": "Missing Hint",
-                    "ja_JP": "Missing Hint",
-                    "ko_KR": "Missing Hint",
-                    "langUid": 64,
-                    "zh_TW": "Missing Hint"
+        return {
+            "icon": "INFO",
+            "hoverText": {
+              "en_US": "Missing Hint",
+              "de_DE": "Missing Hint",
+              "zh_CN": "Missing Hint",
+              "ja_JP": "Missing Hint",
+              "ko_KR": "Missing Hint",
+              "langUid": 886,
+              "zh_TW": "Missing Hint"
+            },
+            "event": [
+              {
+                  "text": {
+                  "en_US": "Missing Hint",
+                  "de_DE": "Missing Hint",
+                  "zh_CN": "Missing Hint",
+                  "ja_JP": "Missing Hint",
+                  "ko_KR": "Missing Hint",
+                  "langUid": 887,
+                  "zh_TW": "Missing Hint"
                 },
                 "center": false,
+                "autoContinue": false,
                 "type": "SHOW_BOARD_MSG"
-            }],
-            hover: {
-                    "en_US": "Missing Hint",
-                    "de_DE": "Missing Hint",
-                    "fr_FR": "Missing Hint",
-                    "langUid": 63,
-                    "zh_CN": "Missing Hint",
-                    "ja_JP": "Missing Hint",
-                    "ko_KR": "Missing Hint",
-                    "zh_TW": "Missing Hint"
-            }
-        }
+              }
+            ]
+        }  
     }
 }
 

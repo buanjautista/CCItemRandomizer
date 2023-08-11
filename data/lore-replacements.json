@@ -1,26 +1,43 @@
 {
     "heat.dng-top": {
-        "397": { "path": ".settings.interact" },
-        "398": { "path": ".settings.interact" },
-        "399": { "path": ".settings.interact" },
-        "400": { "path": ".settings.interact" }
+        "397": { "path": ".settings" },
+        "398": { "path": ".settings" },
+        "399": { "path": ".settings" },
+        "400": { "path": ".settings" }
     },
     "cold-dng.g.shade-room": {
-        "11": { "path": ".settings.interact" },
-        "12": { "path": ".settings.interact" },
-        "13": { "path": ".settings.interact" },
-        "14": { "path": ".settings.interact" }
+        "11": { "path": ".settings" },
+        "12": { "path": ".settings" },
+        "13": { "path": ".settings" },
+        "14": { "path": ".settings" }
     },
     "jungle.dng.wave-exterior-end": {
-        "923": { "path": ".settings.interact" },
-        "924": { "path": ".settings.interact" },
-        "925": { "path": ".settings.interact" },
-        "926": { "path": ".settings.interact" }
+        "923": { "path": ".settings" },
+        "924": { "path": ".settings" },
+        "925": { "path": ".settings" },
+        "926": { "path": ".settings" }
     },
     "jungle.dng.shock-exterior-end": {
-        "128": { "path": ".settings.interact" },
-        "129": { "path": ".settings.interact" },
-        "130": { "path": ".settings.interact" },
-        "131": { "path": ".settings.interact" }
+        "128": { "path": ".settings" },
+        "129": { "path": ".settings" },
+        "130": { "path": ".settings" },
+        "131": { "path": ".settings" }
+    },
+    "jungle-city.interior.questhub-01": {
+        "555": { "path": ".settings" },
+        "556": { "path": ".settings" }
+    },
+    "autumn.guild.inner-fs-og": {
+        "84": { "path": ".settings" }
+    },
+    "autumn.guild.inner-fs-eg": {
+        "51": { "path": ".settings" },
+        "52": { "path": ".settings" },
+        "53": { "path": ".settings" },
+        "54": { "path": ".settings" }
+    },
+    "rookie-harbor.central-quest-hub": {
+        "81": { "path": ".settings" },
+        "82": { "path": ".settings" }
     }
 }
