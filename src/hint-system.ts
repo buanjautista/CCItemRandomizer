@@ -27,17 +27,14 @@ async function fetchHintList(): Promise<any> {
     if (listExists) {
         list = await readJsonFromFile('randomizerHints.json')
         if (currentSeed == list.seed) {
-            console.log('grabbed hint list')
             let savedHintList = list.hints
             return savedHintList
         }
         else {
-            console.log('seed mismatch')
             return false
         }
     }
     else {
-        console.log('no hint list found ')
         return false
     }
     
@@ -47,11 +44,10 @@ export async function generateHintList() {
     let savedHintList = await fetchHintList()
     hintList = []
     if (savedHintList == false) {
-        console.log('no hint list found, generating new one')
         let hintCount = await getHintListLength()
         for (let i = 0; i < hintCount; i++) {
             let hintInfo = await generateHint()
-            hintList.push({hint: hintInfo[0], type: hintInfo[1]}) // Get the hints on a list to be injected into the game later
+            hintList.push({hint: hintInfo[0], type: hintInfo[1]})
         }
         fs.promises.writeFile(
             'randomizerHints.json',
@@ -59,7 +55,6 @@ export async function generateHintList() {
         );
     }
     else { 
-        console.log('hint list found, replacing current one')
         hintList = savedHintList
     }
     // console.log("Hints generated: ", hintCount, hintList) 

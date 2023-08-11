@@ -45,12 +45,11 @@ export default class ItemRandomizer {
 		seed = state.seed;
 		currentVersion = state.currentVersion;
 		console.log('seed', seed);
-		saveSpoilerSeed(spoilerLog, seed) // Saves a copy of spoiler log and seed for hint-system
+		saveSpoilerSeed(spoilerLog, seed); 
+		generateHintList()
 	}
 
 	async prestart() {
-		// @ts-ignore 
-		window.generateHintList = () => generateHintList()
 		// @ts-ignore
 		window.generateRandomizerState = (options: GenerateOptions) => this.generate({
 			...options,
@@ -734,9 +733,6 @@ export default class ItemRandomizer {
 			seedTitle: 'Randomizer'
 		}
 		ig.lang.labels.sc.gui.menu['menu-titles'].randomizer = 'Randomizer';
-		
-		// generate a hint list on memory, there might be better ways to do it
-		generateHintList()
 	}
 }
 
