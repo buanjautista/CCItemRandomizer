@@ -1,8 +1,8 @@
 import { fixedRandomInt, fixedRandomNumber, readJsonFromFile } from './utils.js';
 import { Check } from './checks.js';
 
-type LoreOverrides = Record<string, Record<string, [{ path: string; index: number }]>>
-export let loreMapReplacements: LoreOverrides
+// type LoreOverrides = Record<string, Record<string, [{ path: string; index: number }]>>
+export let loreMapReplacements: any
 
 let spoilerLog: any // This might get replaced with anything on the main script
 let currentSeed: any = 0 // this will probably get replaced with "seed2" on implementation
@@ -13,10 +13,13 @@ export function saveSpoilerSeed(spoiler: any, seed: any) {
     currentSeed = seed
 }
 
-export function generateHintList() {
-    for (let i = 0; i < getHintListLength(); i++) {
+export async function generateHintList() {
+    hintList = []
+    let hintCount = await getHintListLength()
+    for (let i = 0; i < hintCount; i++) {
         generateHint()
     }
+    // console.log("Hints generated: ", hintCount, hintList) 
 }
 
 // Gets the info from randomizerState, and returns the spoiler log from it
@@ -201,7 +204,8 @@ function getItemInfo(item: any) {
 
 
 // grabs the item ID and matches it with the useful_items array
-const USEFUL_ITEMS = [145,149,170,154,155,156,225,153,236,376,147,230,345,286,231,410,439,434,350, 152,146,272,319,349]
+const USEFUL_ITEMS = [145,149,170,154,155,156,225,153,236,376,147,230,345,286,231,410,439,434,350]
+// const USEFUL_ITEMS_KEYS = [152,146,272,319,349]
 function isUsefulItem(currentItem: any) { 
     let isUseful
     for (let i = 0; i < USEFUL_ITEMS.length; i++ ){
@@ -235,7 +239,8 @@ function getCurrentSeedWithOffset() {
 
 
 // Returns hint info from a specific entry on the list, to inject in the game
-export function getHintListEntry(index: any) {
+export function getHintListEntry(check: any, map: any) {
+    let index: number = getHintIndex(check, map)
     if (hintList && hintList[index])
     {
         return {
@@ -295,10 +300,38 @@ export function getHintListEntry(index: any) {
     }
 }
 
+function getHintIndex(check: any, map: any) {
+    let index = 0  
+    let loreOverride = loreMapReplacements[map]
+    let replacements = Object.keys(loreMapReplacements)
+
+    for (let i = 0; i < replacements.length; i++) {
+        if (map == replacements[i]) {
+            for (let subIndex = 0; subIndex < Object.keys(loreOverride).length; subIndex++) {
+                if (check == Object.keys(loreOverride)[subIndex])
+                {
+                    return index 
+                }
+                index++
+            }
+        }
+
+        else {
+            index += Object.keys(loreOverride).length
+        }
+    }
+
+    return index
+}
+
 function getHintListLength (){
     let listLength = 0
-    for (let maps of Object.values(loreMapReplacements)) {
-        listLength += Object.keys(maps).length
+
+    if (loreMapReplacements) {
+        for (let i = 0; i < Object.keys(loreMapReplacements).length; i++) {
+            listLength += Object.keys(loreMapReplacements[Object.keys(loreMapReplacements)[i]]).length
+        }
+        
     }
     return listLength
 }

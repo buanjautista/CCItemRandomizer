@@ -5,7 +5,7 @@ import { Markers, extractMarkers } from './extract-markers.js';
 import { GenerateOptions, deserialize, generateRandomizerState } from './generate.js';
 import { Element } from './item-data.model.js';
 import { addTitleMenuButton } from './randomizer-menu.js';
-import { getHintListEntry, loreMapReplacements, setLoreOverrides, generateHintList } from './hint-system.js';
+import { getHintListEntry, loreMapReplacements, setLoreOverrides, generateHintList, saveSpoilerSeed } from './hint-system.js';
 
 
 declare const ig: any;
@@ -365,13 +365,12 @@ export default class ItemRandomizer {
 
                 if (loreOverrides) { 
                     for (const entity of map.entities) {
-                        if (entity && entity.settings && entity.settings.mapId && loreOverrides[entity.settings.mapId]) {
-                            for (let check of loreOverrides[entity.settings.mapId]) {
-                                let currentHint = getHintListEntry(check.index)
-                                let path = check.path.slice(1).split(/\./g);
-                                set(entity, currentHint.event, [...path, 'event'])
-                                set(entity, currentHint.hover, [...path, 'hoverText'])
-                            }
+						if (entity && entity.settings && entity.settings.mapId && loreOverrides[entity.settings.mapId]) {
+								let currentMap = map.name.replace(/[\\\/]/g, '.')
+                                let currentHint = getHintListEntry(entity.settings.mapId, currentMap);
+                                let path = loreOverrides[entity.settings.mapId].path.slice(1).split(/\./g);
+                                set(entity, currentHint.event, [...path, 'event']);
+                                set(entity, currentHint.hover, [...path, 'hoverText']);
                         }
                     }
                 }
